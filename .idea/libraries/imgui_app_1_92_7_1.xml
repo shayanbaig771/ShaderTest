@@ -1,0 +1,20 @@
+<component name="libraryTable">
+  <library name="imgui-app-1.92.7.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/spair-imgui-1.92.7.1/imgui-app-1.92.7.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/spair-imgui-1.92.7.1/imgui-app-1.92.7.1-all.jar!/" />
+      <root url="jar://$PROJECT_DIR$/spair-imgui-1.92.7.1/imgui-binding-1.92.7.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/spair-imgui-1.92.7.1/imgui-lwjgl3-1.92.7.1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/spair-imgui-1.92.7.1/imgui-app-1.92.7.1-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/spair-imgui-1.92.7.1/imgui-binding-1.92.7.1-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/spair-imgui-1.92.7.1/imgui-lwjgl3-1.92.7.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/spair-imgui-1.92.7.1/imgui-app-1.92.7.1-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/spair-imgui-1.92.7.1/imgui-binding-1.92.7.1-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/spair-imgui-1.92.7.1/imgui-lwjgl3-1.92.7.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
