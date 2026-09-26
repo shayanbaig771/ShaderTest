@@ -1,3 +1,6 @@
+import de.javagl.obj.Obj;
+import de.javagl.obj.ObjData;
+import de.javagl.obj.ObjReader;
 import imgui.ImGui;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
@@ -8,14 +11,13 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.*;
 import java.nio.file.Path;
 
-import static org.lwjgl.glfw.Callbacks.*;
-import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
-import static org.lwjgl.system.MemoryStack.*;
-import static org.lwjgl.system.MemoryUtil.*;
 
 public class Main {
 
@@ -23,7 +25,7 @@ public class Main {
     private static ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
     public static int WIDTH = 1200, HEIGHT = 800;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         Window win = new Window("ShaderTest", WIDTH, HEIGHT);
 
@@ -40,18 +42,8 @@ public class Main {
         VertexBuffer vbo;
         VertexArray vao;
 
-        int[] indices = {
-                0, 1, 2,
-                2, 3, 0
-        };
-
-        float[] vertices = {
-                -0.5f, -0.5f, 0,
-                0.5f, -0.5f, 0,
-                0.5f, 0.5f, 0,
-                -0.5f, 0.5f, 0
-        };
-
+        IntBuffer indices;
+        FloatBuffer vertices;
 
         //GL shenanigans
         {
@@ -63,10 +55,19 @@ public class Main {
             shaders.bind();
 
             vbo = new VertexBuffer(
-                    4,
-                    6,
+                    100000,
+                    100000,
                     3
             );
+
+            {
+                InputStream objInputStream = new FileInputStream("stanford-bunny.obj");
+                Obj obj = ObjReader.read(objInputStream);
+
+                // Convert data into simple single-indexed arrays for your buffers
+                indices = ObjData.getFaceVertexIndices(obj);
+                vertices = ObjData.getVertices(obj);
+            }
 
             vao = new VertexArray();
             vao.setVertexAttributes(
@@ -88,7 +89,7 @@ public class Main {
 
         {
             Matrix4f view = new Matrix4f().lookAt(
-                    new Vector3f(0.0f, 0.0f, 5f),
+                    new Vector3f(0.0f, 0.3f / 2f, 0.5f / 2f),
                     new Vector3f(0.0f, 0.0f, 0.0f),
                     new Vector3f(0.0f, 1.0f, 0.0f)
             );
@@ -128,12 +129,12 @@ public class Main {
                 //vao.bind();
                 shaders.bind();
 
-                rotation = (float) (rotation + 5f * delta);
-                shaders.setMatrix4f("v_model", model.identity().rotate(rotation, 0, 1, 0));
+                rotation = (float) (rotation + 1f * delta);
+                shaders.setMatrix4f("v_model", model.identity().translate(0, -0.1f, 0).rotate(rotation, 0, 1, 0));
 
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
+                glDrawElements(GL_TRIANGLES, indices.capacity(), GL_UNSIGNED_INT, 0);
 
 
                 imGuiGl3.newFrame();
@@ -148,7 +149,10 @@ public class Main {
                             "Obeng Asante, Princess\n" +
                             "Rahal, Batoul\n");
 
-                    ImGui.separatorText("Tests and Metrics");
+                    ImGui.separatorText("Metrics");
+                    ImGui.text("Frame Rate: " + 1 / delta);
+                    ImGui.text("Frame Time: " + delta + "ms");
+
 
 
                 }
