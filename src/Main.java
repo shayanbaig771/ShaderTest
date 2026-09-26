@@ -83,10 +83,10 @@ public class Main {
 
 
 
-        shaders.setMatrix4f("v_model", new Matrix4f());
+
         {
             Matrix4f view = new Matrix4f().lookAt(
-                    new Vector3f(0.0f, 0.0f, 10.0f),
+                    new Vector3f(0.0f, 0.0f, 5f),
                     new Vector3f(0.0f, 0.0f, 0.0f),
                     new Vector3f(0.0f, 1.0f, 0.0f)
             );
@@ -103,7 +103,8 @@ public class Main {
             shaders.setMatrix4f("v_projection", projection);
         }
 
-
+        Matrix4f model = new Matrix4f();
+        float rotation = 1;
 
 
 
@@ -112,8 +113,21 @@ public class Main {
         //loop
         {
 
+            double delta;
+            double start = win.getTime();
+
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             while (!win.shouldClose()) {
+
+                double end = win.getTime();
+
+                delta = end - start;
+                start = end;
+
+
+                rotation = (float) (rotation + 5f * delta);
+                shaders.setMatrix4f("v_model", model.identity().rotate(rotation, 0, 1, 0));
+
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

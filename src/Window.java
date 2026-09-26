@@ -87,6 +87,9 @@ public class Window {
 
     }
 
+    public double getTime() {
+        return glfwGetTime();
+    }
     public String getGlslVersion() {
         return glslVersion;
     }
