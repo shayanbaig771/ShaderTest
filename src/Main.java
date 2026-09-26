@@ -46,10 +46,10 @@ public class Main {
         };
 
         float[] vertices = {
-                -0.5f, -0.5f,
-                0.5f, -0.5f,
-                0.5f, 0.5f,
-                -0.5f, 0.5f
+                -0.5f, -0.5f, 0,
+                0.5f, -0.5f, 0,
+                0.5f, 0.5f, 0,
+                -0.5f, 0.5f, 0
         };
 
 
@@ -64,14 +64,16 @@ public class Main {
 
             vbo = new VertexBuffer(
                     4,
-                    Float.BYTES * 2
+                    6,
+                    3
             );
 
             vao = new VertexArray();
             vao.setVertexAttributes(
-                    new VertexAttribute(0, 2, false, "v_pos")
+                    new VertexAttribute(0, 3, false, "v_pos")
             );
             vao.build();
+
 
 
             glBindBuffer(GL_ARRAY_BUFFER, vbo.myVbo);
@@ -123,16 +125,15 @@ public class Main {
 
                 delta = end - start;
                 start = end;
-
+                //vao.bind();
+                shaders.bind();
 
                 rotation = (float) (rotation + 5f * delta);
                 shaders.setMatrix4f("v_model", model.identity().rotate(rotation, 0, 1, 0));
 
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
                 glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
-
 
 
                 imGuiGl3.newFrame();

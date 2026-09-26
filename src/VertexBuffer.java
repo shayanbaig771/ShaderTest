@@ -6,21 +6,14 @@ public class VertexBuffer {
     public int myEbo;
 
     private int maxVertices;
-    private int numOfVertices;
+    private int maxIndices;
     private int vertexDataSize;
 
-    public VertexBuffer(int maxVertices, int vertexDataSize) {
-        this.vertexDataSize = vertexDataSize;
+    public VertexBuffer(int maxVertices, int maxIndices, int vertexDataSize) {
         this.maxVertices = maxVertices;
+        this.maxIndices = maxIndices;
+        this.vertexDataSize = vertexDataSize;
         build();
-    }
-
-    public int getNumOfVertices() {
-        return numOfVertices;
-    }
-
-    public int getVertexDataSize() {
-        return vertexDataSize;
     }
 
 
@@ -31,11 +24,10 @@ public class VertexBuffer {
         myVbo = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, myVbo);
         glBufferData(GL_ARRAY_BUFFER, maxVertices * vertexDataSize * Float.BYTES, GL_DYNAMIC_DRAW);
-        numOfVertices = maxVertices;
 
         myEbo = glGenBuffers();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, myEbo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, (maxVertices / 4) * 6L * Integer.BYTES, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, maxIndices * Integer.SIZE, GL_DYNAMIC_DRAW);
 
     }
     public void dispose() {
