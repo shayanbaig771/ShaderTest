@@ -19,71 +19,19 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class Main {
 
-    private static long window;
     private static ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
     private static ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
-    private static String glslVersion = null;
     public static int WIDTH = 1200, HEIGHT = 800;
 
     public static void main(String[] args) {
-        //init
-        {
-            GLFWErrorCallback.createPrint(System.err).set();
-            if ( !glfwInit() )
-                throw new IllegalStateException("Unable to initialize GLFW");
 
-            glfwDefaultWindowHints();
-            glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-            glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-            {
-                final boolean isMac = System.getProperty("os.name").toLowerCase().contains("mac");
-                if (isMac) {
-                    glslVersion = "#version 150";
-                    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-                    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-                    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-                    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);          // Required on Mac
-                } else {
-                    glslVersion = "#version 130";
-                    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-                    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-                }
-            }
-
-            window = glfwCreateWindow(WIDTH, HEIGHT , "ShaderTest", NULL, NULL);
-            if ( window == NULL )
-                throw new RuntimeException("Failed to create the GLFW window");
-
-
-
-            try ( MemoryStack stack = stackPush() ) {
-                IntBuffer pWidth = stack.mallocInt(1); // int*
-                IntBuffer pHeight = stack.mallocInt(1); // int*
-
-                glfwGetWindowSize(window, pWidth, pHeight);
-
-                GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
-
-                glfwSetWindowPos(
-                        window,
-                        (vidmode.width() - pWidth.get(0)) / 2,
-                        (vidmode.height() - pHeight.get(0)) / 2
-                );
-            }
-            glfwMakeContextCurrent(window);
-            GL.createCapabilities();
-            glfwSwapInterval(1);
-            glfwShowWindow(window);
-
-
-        }
+        Window win = new Window("ShaderTest", WIDTH, HEIGHT);
 
         //imgui
         {
             ImGui.createContext();
-            imGuiGlfw.init(window, true);
-            imGuiGl3.init(glslVersion);
+            imGuiGlfw.init(win.getWindow(), true);
+            imGuiGl3.init(win.getGlslVersion());
 
         }
 
@@ -134,6 +82,7 @@ public class Main {
         }
 
 
+
         shaders.setMatrix4f("v_model", new Matrix4f());
         {
             Matrix4f view = new Matrix4f().lookAt(
@@ -164,7 +113,7 @@ public class Main {
         {
 
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            while ( !glfwWindowShouldClose(window) ) {
+            while (!win.shouldClose()) {
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -195,10 +144,7 @@ public class Main {
                 imGuiGl3.renderDrawData(ImGui.getDrawData());
 
                 ImGui.endFrame();
-
-
-                glfwSwapBuffers(window);
-                glfwPollEvents();
+                win.tick();
             }
         }
 
@@ -206,12 +152,10 @@ public class Main {
         {
             imGuiGlfw.shutdown();
             ImGui.destroyContext();
-
-
-            glfwFreeCallbacks(window);
-            glfwDestroyWindow(window);
-            glfwTerminate();
-            glfwSetErrorCallback(null).free();
+            shaders.dispose();
+            vbo.dispose();
+            vao.dispose();
+            win.dispose();
         }
     }
 
