@@ -2,6 +2,7 @@ import imgui.ImGui;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -22,6 +23,7 @@ public class Main {
     private static ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
     private static ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
     private static String glslVersion = null;
+    public static int WIDTH = 1200, HEIGHT = 800;
 
     public static void main(String[] args) {
         //init
@@ -48,7 +50,7 @@ public class Main {
                 }
             }
 
-            window = glfwCreateWindow(1200, 800, "ShaderTest", NULL, NULL);
+            window = glfwCreateWindow(WIDTH, HEIGHT , "ShaderTest", NULL, NULL);
             if ( window == NULL )
                 throw new RuntimeException("Failed to create the GLFW window");
 
@@ -133,8 +135,24 @@ public class Main {
 
 
         shaders.setMatrix4f("v_model", new Matrix4f());
-        shaders.setMatrix4f("v_view", new Matrix4f());
-        shaders.setMatrix4f("v_projection", new Matrix4f());
+        {
+            Matrix4f view = new Matrix4f().lookAt(
+                    new Vector3f(0.0f, 0.0f, 10.0f),
+                    new Vector3f(0.0f, 0.0f, 0.0f),
+                    new Vector3f(0.0f, 1.0f, 0.0f)
+            );
+
+            shaders.setMatrix4f("v_view", view);
+
+            Matrix4f projection = new Matrix4f().perspective(
+                    (float) Math.toRadians(45.0f),
+                    (float) WIDTH / HEIGHT,
+                    0.1f,
+                    100.0f
+            );
+
+            shaders.setMatrix4f("v_projection", projection);
+        }
 
 
 
@@ -151,6 +169,7 @@ public class Main {
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
+
 
 
                 imGuiGl3.newFrame();
