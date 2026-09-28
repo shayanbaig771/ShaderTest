@@ -1,3 +1,4 @@
+package eng;
 
 public class VertexAttribute {
     public int index;
