@@ -1,20 +1,10 @@
-import de.javagl.obj.Obj;
-import de.javagl.obj.ObjData;
-import de.javagl.obj.ObjReader;
 import imgui.ImGui;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.lwjgl.*;
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.*;
-import org.lwjgl.system.*;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.*;
 import java.nio.file.Path;
 
 import static org.lwjgl.opengl.GL46.*;
@@ -23,7 +13,7 @@ public class Main {
 
     private static ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
     private static ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
-    public static int WIDTH = 1200, HEIGHT = 800;
+    public static int WIDTH = 1600, HEIGHT = 1000;
 
     public static void main(String[] args) throws IOException {
 
@@ -37,64 +27,29 @@ public class Main {
 
         }
 
+        glEnable(GL_DEPTH_TEST);
 
-        ShaderProgram shaders;
-        VertexBuffer vbo;
-        VertexArray vao;
-
-        IntBuffer indices;
-        FloatBuffer vertices;
-
-        //GL shenanigans
-        {
-            shaders = new ShaderProgram(
-                    FileUtil.readString(Path.of("VertexShader.glsl")),
-                    FileUtil.readString(Path.of("FragmentShader.glsl"))
+        Mesh[] bunnies = new Mesh[100];
+        for(int i = 0; i < bunnies.length; i++) {
+            bunnies[i] = new Mesh(
+                    Path.of("VertexShader.glsl"),
+                    Path.of("FragmentShader.glsl"),
+                    Path.of("stanford-bunny.obj")
             );
-            shaders.prepare();
-            shaders.bind();
-
-            vbo = new VertexBuffer(
-                    100000,
-                    100000,
-                    3
-            );
-
-            {
-                InputStream objInputStream = new FileInputStream("stanford-bunny.obj");
-                Obj obj = ObjReader.read(objInputStream);
-
-                // Convert data into simple single-indexed arrays for your buffers
-                indices = ObjData.getFaceVertexIndices(obj);
-                vertices = ObjData.getVertices(obj);
-            }
-
-            vao = new VertexArray();
-            vao.setVertexAttributes(
-                    new VertexAttribute(0, 3, false, "v_pos")
-            );
-            vao.build();
-
-
-
-            glBindBuffer(GL_ARRAY_BUFFER, vbo.myVbo);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
-
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.myEbo);
-            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices);
         }
 
 
 
 
-        {
+        for(Mesh mesh : bunnies) {
+            mesh.shaders.bind();
             Matrix4f view = new Matrix4f().lookAt(
-                    new Vector3f(0.0f, 0.3f / 2f, 0.5f / 2f),
+                    new Vector3f(0.0f, 0.0f, 2.5f),
                     new Vector3f(0.0f, 0.0f, 0.0f),
                     new Vector3f(0.0f, 1.0f, 0.0f)
             );
 
-            shaders.setMatrix4f("v_view", view);
+            mesh.shaders.setMatrix4f("v_view", view);
 
             Matrix4f projection = new Matrix4f().perspective(
                     (float) Math.toRadians(45.0f),
@@ -103,7 +58,7 @@ public class Main {
                     100.0f
             );
 
-            shaders.setMatrix4f("v_projection", projection);
+            mesh.shaders.setMatrix4f("v_projection", projection);
         }
 
         Matrix4f model = new Matrix4f();
@@ -121,20 +76,33 @@ public class Main {
 
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             while (!win.shouldClose()) {
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 double end = win.getTime();
-
                 delta = end - start;
                 start = end;
-                //vao.bind();
-                shaders.bind();
 
+                int x = 10;
+                int y = 10;
                 rotation = (float) (rotation + 1f * delta);
-                shaders.setMatrix4f("v_model", model.identity().translate(0, -0.1f, 0).rotate(rotation, 0, 1, 0));
+                int N = 10; // resolution
+                for(int i = 0; i < bunnies.length; i++){
+
+                    int ix = i % N;
+                    int iy = i / N;
+
+                    float px = 0.1f * (float) (-x + (2.0 * x) * ix / (N - 1));
+                    float py = 0.1f * (float) (-y + (2.0 * y) * iy / (N - 1));
 
 
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                glDrawElements(GL_TRIANGLES, indices.capacity(), GL_UNSIGNED_INT, 0);
+                    Mesh mesh = bunnies[i];
+                    mesh.vao.bind();
+                    mesh.shaders.bind();
+
+                    mesh.shaders.setMatrix4f("v_model", model.identity().translate(px, py, 0).rotate(rotation * i * 0.1f, 0, 1, 0));
+                    glDrawElements(GL_TRIANGLES, mesh.indices.capacity(), GL_UNSIGNED_INT, 0);
+                }
+
 
 
                 imGuiGl3.newFrame();
@@ -171,9 +139,11 @@ public class Main {
         {
             imGuiGlfw.shutdown();
             ImGui.destroyContext();
-            shaders.dispose();
-            vbo.dispose();
-            vao.dispose();
+            for(Mesh mesh : bunnies) {
+                mesh.shaders.dispose();
+                mesh.vbo.dispose();
+                mesh.vao.dispose();
+            }
             win.dispose();
         }
     }
