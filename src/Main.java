@@ -32,9 +32,9 @@ public class Main {
         Mesh[] bunnies = new Mesh[100];
         for(int i = 0; i < bunnies.length; i++) {
             bunnies[i] = new Mesh(
-                    Path.of("VertexShader.glsl"),
-                    Path.of("FragmentShader.glsl"),
-                    Path.of("stanford-bunny.obj")
+                    Path.of("shaders/naive_specialized/VertexShader.glsl"),
+                    Path.of("shaders/naive_specialized/FragmentShader.glsl"),
+                    Path.of("models/stanford-bunny.obj")
             );
         }
 
