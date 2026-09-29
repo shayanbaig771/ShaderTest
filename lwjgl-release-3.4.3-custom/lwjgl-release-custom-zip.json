@@ -5,6 +5,7 @@
     "joml"
   ],
   "platform": [
+    "linux",
     "windows"
   ],
   "descriptions": false,
