@@ -17,8 +17,13 @@ public class Main {
     private static ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
     public static int WIDTH = 1600, HEIGHT = 1000;
 
+    public enum Benchmark {
+        NaiveSpecialized
+    }
+
     public static void main(String[] args) throws IOException {
 
+        Benchmark benchmark = Benchmark.NaiveSpecialized;
         Window win = new Window("ShaderTest", WIDTH, HEIGHT);
 
         //imgui
@@ -34,33 +39,40 @@ public class Main {
         Mesh[] bunnies = new Mesh[100];
         for(int i = 0; i < bunnies.length; i++) {
             bunnies[i] = new Mesh(
-                    Path.of("shaders/naive_specialized/VertexShader.glsl"),
-                    Path.of("shaders/naive_specialized/FragmentShader.glsl"),
+                    benchmark == Benchmark.NaiveSpecialized
+                            ? Path.of("shaders/naive_specialized/VertexShader.glsl")
+                            : null,
+                    benchmark == Benchmark.NaiveSpecialized
+                            ? Path.of("shaders/naive_specialized/FragmentShader.glsl")
+                            : null,
+
                     Path.of("models/stanford-bunny.obj")
             );
         }
 
 
+        if(benchmark == Benchmark.NaiveSpecialized) {
 
 
-        for(Mesh mesh : bunnies) {
-            mesh.shaders.bind();
-            Matrix4f view = new Matrix4f().lookAt(
-                    new Vector3f(0.0f, 0.0f, 2.5f),
-                    new Vector3f(0.0f, 0.0f, 0.0f),
-                    new Vector3f(0.0f, 1.0f, 0.0f)
-            );
+            for (Mesh mesh : bunnies) {
+                mesh.shaders.bind();
+                Matrix4f view = new Matrix4f().lookAt(
+                        new Vector3f(0.0f, 0.0f, 2.5f),
+                        new Vector3f(0.0f, 0.0f, 0.0f),
+                        new Vector3f(0.0f, 1.0f, 0.0f)
+                );
 
-            mesh.shaders.setMatrix4f("v_view", view);
+                mesh.shaders.setMatrix4f("v_view", view);
 
-            Matrix4f projection = new Matrix4f().perspective(
-                    (float) Math.toRadians(45.0f),
-                    (float) WIDTH / HEIGHT,
-                    0.1f,
-                    100.0f
-            );
+                Matrix4f projection = new Matrix4f().perspective(
+                        (float) Math.toRadians(45.0f),
+                        (float) WIDTH / HEIGHT,
+                        0.1f,
+                        100.0f
+                );
 
-            mesh.shaders.setMatrix4f("v_projection", projection);
+                mesh.shaders.setMatrix4f("v_projection", projection);
+            }
         }
 
         Matrix4f model = new Matrix4f();
@@ -99,9 +111,12 @@ public class Main {
 
                     Mesh mesh = bunnies[i];
                     mesh.vao.bind();
-                    mesh.shaders.bind();
 
-                    mesh.shaders.setMatrix4f("v_model", model.identity().translate(px, py, 0).rotate(rotation * i * 0.1f, 0, 1, 0));
+                    if(benchmark == Benchmark.NaiveSpecialized) {
+                        mesh.shaders.bind();
+                        mesh.shaders.setMatrix4f("v_model", model.identity().translate(px, py, 0).rotate(rotation * i * 0.1f, 0, 1, 0));
+                    }
+
                     glDrawElements(GL_TRIANGLES, mesh.indices.capacity(), GL_UNSIGNED_INT, 0);
                 }
 
