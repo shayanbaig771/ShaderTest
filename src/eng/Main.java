@@ -132,7 +132,9 @@ public class Main {
                     ImGui.text("Baig, Mohammed\n" +
                             "Derk, Justin\n" +
                             "Obeng Asante, Princess\n" +
-                            "Rahal, Batoul\n");
+                            "Rahal, Batoul\n" +
+                            "Aiza, Sana\n" +
+                            "Mohammed, Mohammed");
 
                     ImGui.separatorText("Metrics");
                     ImGui.text("Frame Rate: " + 1 / delta);
