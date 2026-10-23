@@ -21,7 +21,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        Window win = new Window("ShaderTest", WIDTH, HEIGHT);
+        Window win = new Window("SHADERTEST [Naive-Specialized]", WIDTH, HEIGHT);
 
         //imgui
         {
