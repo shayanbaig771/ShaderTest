@@ -15,11 +15,11 @@ import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
 
 public class Mesh {
-    ShaderProgram shaders;
-    VertexBuffer vbo;
-    VertexArray vao;
+    public ShaderProgram shaders;
+    public VertexBuffer vbo;
+    public VertexArray vao;
 
-    IntBuffer indices;
+    public IntBuffer indices;
     FloatBuffer vertices;
 
     public Mesh(
