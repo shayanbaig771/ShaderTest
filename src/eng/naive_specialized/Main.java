@@ -1,5 +1,7 @@
-package eng;
+package eng.naive_specialized;
 
+import eng.Mesh;
+import eng.Window;
 import imgui.ImGui;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
@@ -35,7 +37,7 @@ public class Main {
         for(int i = 0; i < bunnies.length; i++) {
             bunnies[i] = new Mesh(
                     Path.of("shaders/naive_specialized/VertexShader.glsl"),
-                    Path.of("shaders/naive_specialized/FragmentShader.glsl"),
+                    Path.of("shaders/naive_specialized/variants/FragmentShader_" + i + ".glsl"),
                     Path.of("models/stanford-bunny.obj")
             );
         }
