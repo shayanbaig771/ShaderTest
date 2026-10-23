@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class NaiveSpecializedShaderGen {
+public class ShaderPermutationsGen {
     public static void main(String[] args) throws IOException {
 
 
@@ -14,7 +14,7 @@ public class NaiveSpecializedShaderGen {
             float k = i / 100f;
             String trig = Math.random() > 0.5 ? "cos" : "sin";
 
-            String fs = String.format("#version 330 core\n" +
+            String fs = String.format("#version 460 core\n" +
                     "\n" +
                     "out vec4 FragColor;\n" +
                     "uniform int u_index;\n" +
