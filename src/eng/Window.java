@@ -33,9 +33,12 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class Window {
     private long window;
     private String glslVersion;
+    private int width, height;
     public Window(String title, int width, int height) {
         //init
         {
+            this.width = width;
+            this.height = height;
             GLFWErrorCallback.createPrint(System.err).set();
             if ( !glfwInit() )
                 throw new IllegalStateException("Unable to initialize GLFW");
@@ -97,6 +100,7 @@ public class Window {
         return glslVersion;
     }
 
+
     public long getWindow() {
         return window;
     }
@@ -105,11 +109,18 @@ public class Window {
         return glfwWindowShouldClose(window);
     }
     public void tick() {
-
-
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
     public void dispose() {
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);

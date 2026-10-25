@@ -1,4 +1,4 @@
-package eng.naive_specialized;
+package eng.specialized;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,7 +35,7 @@ public class ShaderPermutationsGen {
 
 
 
-            Path path = Path.of("shaders/naive_specialized/variants/FragmentShader_" + i + ".glsl");
+            Path path = Path.of("shaders/naive_specialized/permutations/FragmentShader_" + i + ".glsl");
             Files.writeString(path, fs);
 
         }

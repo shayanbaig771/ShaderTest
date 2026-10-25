@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class FileUtil {
     public static String readString(Path path){
@@ -21,6 +23,29 @@ public class FileUtil {
             return total.toString();
         }
         catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void writeCSV(Path path, long[] data) {
+        String csvContent = Arrays.stream(data)
+                .mapToObj(String::valueOf)
+                .collect(Collectors.joining("\n"));
+
+        try {
+            Files.writeString(path, csvContent);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void writeCSV(Path path, double[] data) {
+        String csvContent = Arrays.stream(data)
+                .mapToObj(String::valueOf)
+                .collect(Collectors.joining("\n"));
+        try {
+            Files.writeString(path, csvContent);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

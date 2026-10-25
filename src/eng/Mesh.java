@@ -5,6 +5,7 @@ import de.javagl.obj.ObjData;
 import de.javagl.obj.ObjReader;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.FloatBuffer;
@@ -26,7 +27,7 @@ public class Mesh {
             Path vertexShaderPath,
             Path fragmentShaderPath,
             Path modelPath
-    ) throws IOException {
+    ) {
 
         //GL shenanigans
         {
@@ -46,8 +47,16 @@ public class Mesh {
             );
 
             {
-                InputStream objInputStream = new FileInputStream(modelPath.toFile());
-                Obj obj = ObjReader.read(objInputStream);
+                InputStream objInputStream = null;
+                Obj obj;
+                try {
+                    objInputStream = new FileInputStream(modelPath.toFile());
+                    obj = ObjReader.read(objInputStream);
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
 
                 // Convert data into simple single-indexed arrays for your buffers
                 indices = ObjData.getFaceVertexIndices(obj);
