@@ -30,14 +30,14 @@ public class Specialized extends Benchmark {
                     Path.of("shaders/specialized/permutations/FragmentShader_" + i + ".glsl"),
                     Path.of("models/stanford-bunny.obj")
             );
-            mesh.shaders.bind();
+            mesh.shaderProgram.bind();
             Matrix4f view = new Matrix4f().lookAt(
                     new Vector3f(0.0f, 0.0f, 2.5f),
                     new Vector3f(0.0f, 0.0f, 0.0f),
                     new Vector3f(0.0f, 1.0f, 0.0f)
             );
 
-            mesh.shaders.setMatrix4f("v_view", view);
+            mesh.shaderProgram.setMatrix4f("v_view", view);
 
             Matrix4f projection = new Matrix4f().perspective(
                     (float) Math.toRadians(45.0f),
@@ -46,7 +46,7 @@ public class Specialized extends Benchmark {
                     100.0f
             );
 
-            mesh.shaders.setMatrix4f("v_projection", projection);
+            mesh.shaderProgram.setMatrix4f("v_projection", projection);
             bunnies[i] = mesh;
         }
         long[] ACCUM_STARTUP_TIME = new long[]{System.currentTimeMillis() - STARTUP_START_MS};
@@ -85,8 +85,8 @@ public class Specialized extends Benchmark {
                     mesh.vao.bind();
 
                     long SHADER_BIND_START_NS = System.nanoTime();
-                    mesh.shaders.bind();
-                    mesh.shaders.setMatrix4f("v_model", model.identity().translate(px, py, 0).rotate(rotation * i * 0.1f, 0, 1, 0));
+                    mesh.shaderProgram.bind();
+                    mesh.shaderProgram.setMatrix4f("v_model", model.identity().translate(px, py, 0).rotate(rotation * i * 0.1f, 0, 1, 0));
                     ACCUM_SHADER_BIND_TIME[numFrames] = (System.nanoTime() - SHADER_BIND_START_NS);
 
                     long DRAW_START_NS = System.nanoTime();
@@ -117,7 +117,7 @@ public class Specialized extends Benchmark {
         }
 
         for(Mesh mesh : bunnies) {
-            mesh.shaders.dispose();
+            mesh.shaderProgram.dispose();
             mesh.vbo.dispose();
             mesh.vao.dispose();
         }
