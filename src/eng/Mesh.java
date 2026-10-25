@@ -30,12 +30,14 @@ public class Mesh {
 
         //GL shenanigans
         {
-            shaders = new ShaderProgram(
-                    FileUtil.readString(vertexShaderPath),
-                    FileUtil.readString(fragmentShaderPath)
-            );
-            shaders.prepare();
-            shaders.bind();
+            if(vertexShaderPath != null && fragmentShaderPath != null) {
+                shaders = new ShaderProgram(
+                        FileUtil.readString(vertexShaderPath),
+                        FileUtil.readString(fragmentShaderPath)
+                );
+                shaders.prepare();
+                shaders.bind();
+            }
 
             vbo = new VertexBuffer(
                     100000,
