@@ -1,5 +1,7 @@
-package eng.uber_shaders;
+package eng.ubershader;
 
+import eng.Benchmark;
+import eng.FileUtil;
 import eng.Mesh;
 import eng.Window;
 import imgui.ImGui;
@@ -8,44 +10,26 @@ import imgui.glfw.ImGuiImplGlfw;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 import static org.lwjgl.opengl.GL46.*;
 
-public class Main {
+public class Ubershader extends Benchmark {
 
-    private static ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
-    private static ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
-    public static int WIDTH = 1600, HEIGHT = 1000;
+    public void init(Window win, ImGuiImplGl3 gl, ImGuiImplGlfw glfw) {
+        int MESH_COUNT = 100;
+        int EXPERIMENT_FRAMES = 100;
 
-    public static void main(String[] args) throws IOException {
-
-        Window win = new Window("SHADERTEST [Ubershaders]", WIDTH, HEIGHT);
-
-        //imgui
-        {
-            ImGui.createContext();
-            imGuiGlfw.init(win.getWindow(), true);
-            imGuiGl3.init(win.getGlslVersion());
-
-        }
-
-        glEnable(GL_DEPTH_TEST);
-
-        Mesh[] bunnies = new Mesh[100];
+        long STARTUP_START_MS = System.currentTimeMillis();
+        Mesh[] bunnies = new Mesh[MESH_COUNT];
+        Matrix4f model = new Matrix4f();
+        float rotation = 1;
         for(int i = 0; i < bunnies.length; i++) {
-            bunnies[i] = new Mesh(
-                    Path.of("shaders/ubershaders/VertexShader.glsl"),
-                    Path.of("shaders/ubershaders/FragmentShader.glsl"),
+            Mesh mesh = new Mesh(
+                    Path.of("shaders/ubershader/VertexShader.glsl"),
+                    Path.of("shaders/ubershader/FragmentShader.glsl"),
                     Path.of("models/stanford-bunny.obj")
             );
-        }
-
-
-
-
-        for(Mesh mesh : bunnies) {
             mesh.shaders.bind();
             Matrix4f view = new Matrix4f().lookAt(
                     new Vector3f(0.0f, 0.0f, 2.5f),
@@ -57,20 +41,18 @@ public class Main {
 
             Matrix4f projection = new Matrix4f().perspective(
                     (float) Math.toRadians(45.0f),
-                    (float) WIDTH / HEIGHT,
+                    (float) win.getWidth() / win.getHeight(),
                     0.1f,
                     100.0f
             );
 
             mesh.shaders.setMatrix4f("v_projection", projection);
+            bunnies[i] = mesh;
         }
-
-        Matrix4f model = new Matrix4f();
-        float rotation = 1;
-
-
-
-
+        long[] ACCUM_STARTUP_TIME = new long[]{System.currentTimeMillis() - STARTUP_START_MS};
+        long[] ACCUM_SHADER_BIND_TIME = new long[EXPERIMENT_FRAMES * MESH_COUNT];
+        long[] ACCUM_DRAW_TIME = new long[EXPERIMENT_FRAMES * MESH_COUNT];
+        double[] ACCUM_FRAME_TIME = new double[EXPERIMENT_FRAMES];
 
         //loop
         {
@@ -101,56 +83,59 @@ public class Main {
 
                     Mesh mesh = bunnies[i];
                     mesh.vao.bind();
-                    mesh.shaders.bind();
 
+                    long SHADER_BIND_START_NS = System.nanoTime();
+                    mesh.shaders.bind();
                     mesh.shaders.setMatrix4f("v_model", model.identity().translate(px, py, 0).rotate(rotation * i * 0.1f, 0, 1, 0));
                     mesh.shaders.setInt("u_index", i);
+                    ACCUM_SHADER_BIND_TIME[numFrames] = (System.nanoTime() - SHADER_BIND_START_NS);
+
+                    long DRAW_START_NS = System.nanoTime();
                     glDrawElements(GL_TRIANGLES, mesh.indices.capacity(), GL_UNSIGNED_INT, 0);
+                    ACCUM_DRAW_TIME[numFrames] = (System.nanoTime() - DRAW_START_NS);
                 }
 
 
 
-                imGuiGl3.newFrame();
-                imGuiGlfw.newFrame();
+                gl.newFrame();
+                glfw.newFrame();
                 ImGui.newFrame();
 
-                ImGui.begin("uOttawa ENG1112 Research Project Demo");
-                {
-                    ImGui.separatorText("A project by:");
-                    ImGui.text("Baig, Mohammed\n" +
-                            "Derk, Justin\n" +
-                            "Obeng Asante, Princess\n" +
-                            "Rahal, Batoul\n");
-
-                    ImGui.separatorText("Metrics");
-                    ImGui.text("Frame Rate: " + 1 / delta);
-                    ImGui.text("Frame Time: " + delta + "ms");
-
-
-
-                }
-                ImGui.end();
+                ImGui.showDemoWindow();
 
 
                 ImGui.render();
-                imGuiGl3.renderDrawData(ImGui.getDrawData());
+                gl.renderDrawData(ImGui.getDrawData());
 
                 ImGui.endFrame();
                 win.tick();
+
+                ACCUM_FRAME_TIME[numFrames] = delta;
+                numFrames++;
+
+                if(numFrames >= EXPERIMENT_FRAMES) break;
             }
         }
 
-        //end
-        {
-            imGuiGlfw.shutdown();
-            ImGui.destroyContext();
-            for(Mesh mesh : bunnies) {
-                mesh.shaders.dispose();
-                mesh.vbo.dispose();
-                mesh.vao.dispose();
-            }
-            win.dispose();
+        for(Mesh mesh : bunnies) {
+            mesh.shaders.dispose();
+            mesh.vbo.dispose();
+            mesh.vao.dispose();
         }
+
+        //Write metrics
+        {
+
+            FileUtil.writeCSV(Path.of("ubershader_startup_time_ms.csv"), ACCUM_STARTUP_TIME);
+            FileUtil.writeCSV(Path.of("ubershader_shader_bind_time_ns.csv"), ACCUM_SHADER_BIND_TIME);
+            FileUtil.writeCSV(Path.of("ubershader_draw_time_ns.csv"), ACCUM_DRAW_TIME);
+            FileUtil.writeCSV(Path.of("ubershader_frame_time_ms.csv"), ACCUM_FRAME_TIME);
+
+        }
+    }
+
+    public static void main(String[] args) {
+        new Ubershader().launch("", 1600, 1000);
     }
 
 }
