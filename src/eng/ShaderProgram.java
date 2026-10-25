@@ -77,6 +77,11 @@ public class ShaderProgram {
         glUniform1iv(location, array);
     }
 
+    public void setInt(String name, int v) {
+        int location = glGetUniformLocation(shaderProgram, name);
+        glUniform1i(location, v);
+    }
+
     public void dispose() {
         glDeleteProgram(shaderProgram);
     }
