@@ -2,7 +2,7 @@ package eng;
 
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
-
+import static org.lwjgl.opengl.KHRParallelShaderCompile.*;
 import java.nio.FloatBuffer;
 
 import static org.lwjgl.opengl.GL46.*;
@@ -11,6 +11,7 @@ public class ShaderProgram {
     private String fragmentShaderSource;
 
     private int shaderProgram;
+    private int[] programStat;
 
     /***
      * Create a Shader from the specified Vertex and Fragment Shader sources
@@ -48,6 +49,11 @@ public class ShaderProgram {
         glDeleteShader(fragmentShaderProg);
 
         glLinkProgram(shaderProgram);
+    }
+
+    public boolean isReady() {
+        glGetProgramiv(shaderProgram, GL_COMPLETION_STATUS_KHR, programStat);
+        return programStat[0] == GL_TRUE;
     }
 
     public void bind(){
